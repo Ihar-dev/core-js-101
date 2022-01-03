@@ -16,6 +16,7 @@ module.exports = {
     ecmaVersion: 2018,
   },
   rules: {
-    'linebreak-style': ['error', process.platform === 'win32' ? 'windows' : 'unix'],
+    "linebreak-style": 0,
+    "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
   },
 };
