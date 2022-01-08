@@ -114,39 +114,111 @@ function fromJSON(proto, json) {
  *  For more examples see unit tests.
  */
 
-const cssSelectorBuilder = {
-  cssArray: [],
+class CssSelectorBuilder {
+  constructor() {
+    this.previousSelector = '';
+    this.cssArray = [];
+    this.order = -1;
+  }
+
   stringify() {
-    const str = this.cssArray.join('');
+    let str = '';
+    str = this.cssArray.join('');
+    this.previousSelector = '';
     this.cssArray = [];
     return str;
-  },
+  }
+
   element(value) {
-    this.cssArray.push(value);
-    return cssSelectorBuilder;
+    if (this.previousSelector === 'element') { throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector'); } // eslint-disable-line
+    if (this.order > 0) { throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'); } // eslint-disable-line
+    this.previousSelector = 'element';
+    this.cssArray.push(`${value}`);
+    this.order = 0;
+    return this;
+  }
+
+  id(value) {
+    if (this.previousSelector === 'id') { throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector'); } // eslint-disable-line
+    if (this.order > 1) { throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'); } // eslint-disable-line
+    this.previousSelector = 'id';
+    this.cssArray.push(`#${value}`);
+    this.order = 1;
+    return this;
+  }
+
+  class(value) {
+    if (this.order > 2) { throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'); } // eslint-disable-line
+    this.previousSelector = '';
+    this.cssArray.push(`.${value}`);
+    this.order = 2;
+    return this;
+  }
+
+  attr(value) {
+    if (this.order > 3) { throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'); } // eslint-disable-line
+    this.previousSelector = '';
+    this.cssArray.push(`[${value}]`);
+    this.order = 3;
+    return this;
+  }
+
+  pseudoClass(value) {
+    if (this.order > 4) { throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'); } // eslint-disable-line
+    this.previousSelector = '';
+    this.cssArray.push(`:${value}`);
+    this.order = 4;
+    return this;
+  }
+
+  pseudoElement(value) {
+    if (this.previousSelector === 'pseudoElement') { throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector'); }// eslint-disable-line
+    this.previousSelector = 'pseudoElement';
+    this.cssArray.push(`::${value}`);
+    this.order = 5;
+    return this;
+  }
+  combine(selector1, combinator, selector2) { // eslint-disable-line
+    this.cssArray = this.cssArray.concat(selector1.cssArray).concat([` ${combinator} `]).concat(selector2.cssArray);
+    return this;
+  }
+}
+
+const cssSelectorBuilder = {
+  element(value) {
+    const cssSelector = new CssSelectorBuilder();
+    cssSelector.element(value);
+    return cssSelector;
   },
   id(value) {
-    this.cssArray.push(`#${value}`);
-    return cssSelectorBuilder;
+    const cssSelector = new CssSelectorBuilder();
+    cssSelector.id(value);
+    return cssSelector;
   },
   class(value) {
-    this.cssArray.push(`.${value}`);
-    return cssSelectorBuilder;
+    const cssSelector = new CssSelectorBuilder();
+    cssSelector.class(value);
+    return cssSelector;
   },
   attr(value) {
-    this.cssArray.push(`[${value}]`);
-    return cssSelectorBuilder;
+    const cssSelector = new CssSelectorBuilder();
+    cssSelector.attr(value);
+    return cssSelector;
   },
   pseudoClass(value) {
-    this.cssArray.push(`:${value}`);
-    return cssSelectorBuilder;
+    const cssSelector = new CssSelectorBuilder();
+    cssSelector.pseudoClass(value);
+    return cssSelector;
   },
   pseudoElement(value) {
-    this.cssArray.push(`::${value}`);
-    return cssSelectorBuilder;
+    const cssSelector = new CssSelectorBuilder();
+    cssSelector.pseudoElement(value);
+    return cssSelector;
   },
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) { // eslint-disable-line
+    const cssSelector = new CssSelectorBuilder();
+    cssSelector.combine(selector1, combinator, selector2);
+    return cssSelector;
   },
 };
 
