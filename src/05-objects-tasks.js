@@ -133,7 +133,7 @@ class CssSelectorBuilder {
     if (this.previousSelector === 'element') { throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector'); }
     if (this.order > 0) { throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'); }
     this.previousSelector = 'element';
-    this.cssArray.push(`${value}`);
+    this.cssArray.push(value);
     this.order = 0;
     return this;
   }
